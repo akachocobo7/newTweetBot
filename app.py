@@ -14,8 +14,8 @@ CONSUMER_KEY = os.environ['CONSUMER_KEY']
 # Consumer Secret
 CONSUMER_SECRET = os.environ['CONSUMER_SECRET']
 # Callback URL (認証後リダイレクトされるURL)
-CALLBACK_URL = 'https://flask-tweepy.herokuapp.com/'  # Heroku上
-# CALLBACK_URL = 'http://localhost:5000/' # ローカル環境
+# CALLBACK_URL = 'https://flask-tweepy.herokuapp.com/'  # Heroku上
+CALLBACK_URL = 'http://localhost:5000/' # ローカル環境
 
 logging.warn('app start!')
 
