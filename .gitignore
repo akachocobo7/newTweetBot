@@ -1,0 +1,6 @@
+# sample
+flask-tweepy
+
+# heroku
+.env
+*.pyc
