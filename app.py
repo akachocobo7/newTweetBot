@@ -24,15 +24,18 @@ app = Flask(__name__)
 # flask の session を使うにはkeyを設定する必要がある．
 app.secret_key = os.environ['SECRET_KEY']
 
-
 @app.route('/')
 def index():
     """ root ページの表示 """
+    # 認証できているなら auth 、できていないなら False
+    auth = authentication()
     # 連携アプリ認証済みなら user の timeline を取得
-    timeline = user_timeline()
+    timeline = user_timeline(auth)
+
+    test = "やっていき"
 
     # templates/index.html を使ってレンダリング．
-    return render_template('index.html', timeline=timeline)
+    return render_template('index.html', auth=auth, timeline=timeline, tweet=test)
 
 
 @app.route('/twitter_auth', methods=['GET'])
@@ -52,9 +55,8 @@ def twitter_auth():
     # リダイレクト
     return redirect(redirect_url)
 
-
-def user_timeline():
-    """ user の timeline のリストを取得 """
+# 認証できているなら auth を返し、できていないなら False を返す
+def authentication():
     # request_token と oauth_verifier のチェック
     token = session.pop('request_token', None)
     verifier = request.args.get('oauth_verifier')
@@ -71,9 +73,15 @@ def user_timeline():
     except tweepy.TweepError, e:
         logging.error(str(e))
         return {}
+    
+    return auth
+    
+def user_timeline(auth):
+    if(auth != False):
+        # tweepy で Twitter API にアクセス
+        api = tweepy.API(auth)
 
-    # tweepy で Twitter API にアクセス
-    api = tweepy.API(auth)
-
-    # user の timeline 内のツイートのリストを最大100件取得して返す
-    return api.user_timeline(count=100)
+        # user の timeline 内のツイートのリストを最大100件取得して返す
+        return api.user_timeline(count=100)
+    else:
+        return {}

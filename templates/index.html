@@ -5,9 +5,40 @@
 </head>
 <body>
   <h1>Flask + Tweepy Sample Application</h1>
-  {% if timeline == False %}
+  {% if auth == False %}
     <p><a href="{{ url_for('twitter_auth') }}">連携アプリ認証</a></p>
   {% else %}
+    <a href="https://twitter.com/share?ref_src=twsrc%5Etfw" class="twitter-share-button" data-size="large" data-text=tweet data-lang="ja" data-show-count="false">Tweet</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+    <!--ツイートボタン-->
+    <a id="tweet-container"
+        class="twitter-share-button"
+        href="https://twitter.com/share"
+        data-size="large"
+        data-text="custom share text"
+        data-url="https://dev.twitter.com/web/tweet-button"
+        data-hashtags="example,demo"
+        data-via="twitterdev"
+        data-related="twitterapi,twitter">
+        Tweet
+    </a>
+    <script>
+      var tweet = {{ tweet|tojson }};
+      // document.write(t)
+
+      twttr.widgets.createShareButton(
+        "https:\/\/dev.twitter.com\/web\/tweet-button",
+        document.getElementById("tweet-container"),
+        {
+          //size: "large",
+          text: tweet,
+          // hashtags: "example,demo",
+          // via: "twitterdev",
+          // related: "twitterapi,twitter"
+        }
+      ); 
+    </script>
+
     <!-- 取得した timeline のテキストを表示 -->
     {% for status in timeline %}
       <p>{{ status.text }}</p>
