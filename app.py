@@ -32,10 +32,11 @@ def index():
     # 連携アプリ認証済みなら user の timeline を取得
     timeline = user_timeline(auth)
 
-    test = "やっていき"
+    tweet = "やっていきテスト😇"
+    tweet_html = '<a href="https://twitter.com/share" class="twitter-share-button" data-size="large" data-url=' + CALLBACK_URL + ' data-text=' + tweet + ' data-lang="ja" data-show-count="false">Tweet</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>'
 
     # templates/index.html を使ってレンダリング．
-    return render_template('index.html', auth=auth, timeline=timeline, tweet=test)
+    return render_template('index.html', auth=auth, timeline=timeline, tweet_html=tweet_html)
 
 
 @app.route('/twitter_auth', methods=['GET'])
