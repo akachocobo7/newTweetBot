@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import json, config, re
@@ -22,7 +23,7 @@ if req.status_code == 200:
 
         tweet = re.sub('#.*', "", tweet)    # ハッシュタグは削除
         tweet = re.sub('http.*', "", tweet) # urlは削除
-        tweet = re.sub('@.*\s', "", tweet)  # @hoge は削除
+        tweet = re.sub('@.*\\s', "", tweet)  # @hoge は削除
         if "RT" in tweet:   #RTは無視
             pass
         else:
