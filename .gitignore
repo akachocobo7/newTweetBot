@@ -10,3 +10,8 @@ config.py
 
 # python
 __pycache__
+
+# 実験
+experiment.py
+markov.py
+test.txt
