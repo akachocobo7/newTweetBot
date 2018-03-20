@@ -12,7 +12,7 @@
       <p> <a class="pure-button pure-button-primary" href="{{ url_for('twitter_auth') }}">ツイートを生成する</a> </p>
     {% else %}
       <!-- ツイートボタン -->
-      {{ tweet_html | safe }}
+      {{ tweet_html.decode('utf-8') | safe }}
 
       <p>{{ text.decode('utf-8') }}</p>
     {% endif %}
