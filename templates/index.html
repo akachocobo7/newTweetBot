@@ -9,18 +9,12 @@
   <body>
     <h1>Flask + Tweepy Sample Application</h1>
     {% if auth == False %}
-      <p> <a class="pure-button pure-button-primary" href="{{ url_for('twitter_auth') }}">連携アプリ認証</a> </p>
+      <p> <a class="pure-button pure-button-primary" href="{{ url_for('twitter_auth') }}">ツイートを生成する</a> </p>
     {% else %}
       <!-- ツイートボタン -->
       {{ tweet_html.decode('utf-8') | safe }}
 
       <p>{{ text.decode('utf-8') }}</p>
-
-      <!-- 取得した timeline のテキストを表示 -->
-      {% for status in timeline %}
-        <p>{{ status.text }}</p>
-        <hr>
-      {% endfor %}
     {% endif %}
     <footer>
       {% if auth != False %}

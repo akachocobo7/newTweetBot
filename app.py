@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 """
-Flask+TweepyによるTwitter連携アプリのサンプル．
-連携アプリ認証を行いタイムラインを表示する．
+過去のツイートから文章を生成するWEBアプリ
 """
+
 import os
 import logging
 import tweepy
@@ -25,33 +26,38 @@ logging.warn('app start!')
 
 # Flask の起動
 app = Flask(__name__)
-# flask の session を使うにはkeyを設定する必要がある．
+# flask の session を使うにはkeyを設定する必要がある
 app.secret_key = os.environ['SECRET_KEY']
 
 @app.route('/')
 def index():
     """ root ページの表示 """
+
     # 認証できているなら auth 、できていないなら False
     auth = authentication()
-    # 連携アプリ認証済みなら user の timeline を取得
-    timeline = user_timeline(auth)
 
+    # 認証できているなら文章を生成する
     if(auth != False):
-        generate = sentence_generation(get_tweet(auth))
+        # ツイートを取得
+        tweet = get_tweet(auth)
+        # 文章を生成
+        generate = sentence_generation(tweet)
         text = generate.generate_text()
     else:
-        text = ''
+        text = ""
     text = text.encode('utf-8')
 
-    tweet_html = '<a href="https://twitter.com/share" class="twitter-share-button" data-size="large" data-url=' + CALLBACK_URL + ' data-text=' + text + ' data-lang="ja" data-show-count="false">Tweet</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>'
+    # ツイートボタンのHTML
+    tweet_html = '<a href="https://twitter.com/share" class="twitter-share-button" data-size="large" data-url=' + CALLBACK_URL + ' data-text=' + text + ' data-hashtags="Iam_BOT" data-lang="ja" data-show-count="false">Tweet</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>'
 
     # templates/index.html を使ってレンダリング．
-    return render_template('index.html', auth=auth, timeline=timeline, tweet_html=tweet_html, text=text)
+    return render_template('index.html', auth=auth, tweet_html=tweet_html, text=text)
 
 
 @app.route('/twitter_auth', methods=['GET'])
 def twitter_auth():
     """ 連携アプリ認証用URLにリダイレクト """
+
     # tweepy でアプリのOAuth認証を行う
     auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET, CALLBACK_URL)
 
@@ -86,38 +92,35 @@ def authentication():
         return {}
     
     return auth
-    
-def user_timeline(auth):
-    if(auth != False):
-        # tweepy で Twitter API にアクセス
-        api = tweepy.API(auth)
-
-        # user の timeline 内のツイートのリストを最大100件取得して返す
-        return api.user_timeline(count=100)
-    else:
-        return {}
-
 
 
 class sentence_generation(object):
+    """文章を生成する"""
 
     BEGIN = u"__BEGIN_SENTENCE__"
     END = u"__END_SENTENCE__"
 
     def __init__(self, text):
+        # テキストをいい感じにする
         if isinstance(text, str):
             text = text.decode("utf-8")
+        # 半角記号を削除
+        half_symbol = re.compile("[!-/:-@[-`{-~]")
+        text = half_symbol.sub("", text)
+
         self.text = text
 
         self.tagger = MeCab.Tagger('-Ochasen')
 
-
-        self.sentence_num = 3   # 生成する文章の数
+        # 生成する文章の数を指定
+        self.sentence_num = 5
+        # 生成する文章の文字数の大ざっぱな上限
+        self.stop_length = 110
     
     def make_triplet_freqs(self):
         """
-        形態素解析と3つ組の出現回数を数える
-        keyが3つ組で値がその出現回数 の辞書を返す
+        形態素解析と3つ組の出現回数を数える。
+        keyが3つ組で値がその出現回数 の辞書を返す。
         """
         # 長い文章をセンテンス毎に分割
         sentences = self.division(self.text)
@@ -139,8 +142,8 @@ class sentence_generation(object):
     
     def division(self, text):
         """
-        「。」や改行などで区切られた長い文章を一文ずつに分ける
-        一文ずつの配列を返す
+        「。」や改行などで区切られた長い文章を一文ずつに分ける。
+        一文ずつの配列を返す。
         """
         # 改行文字以外の分割文字（正規表現表記）
         delimiter = u"。|．|\\."
@@ -158,8 +161,8 @@ class sentence_generation(object):
     
     def morphological_analysis(self, sentence):
         """
-        一文を形態素解析する
-        形態素で分割された配列を返す
+        一文を形態素解析する。
+        形態素で分割された配列を返す。
         """
         morphemes = []
         sentence = sentence.encode("utf-8")
@@ -174,8 +177,8 @@ class sentence_generation(object):
     
     def make_triplet(self, morphemes):
         """
-        形態素解析で分割された配列を、形態素毎に3つ組にしてその出現回数を数える
-        keyが3つ組で値がその出現回数 の辞書を返す
+        形態素解析で分割された配列を、形態素毎に3つ組にしてその出現回数を数える。
+        keyが3つ組で値がその出現回数 の辞書を返す。
         """
 
         # 3つ組をつくれない場合は終える
@@ -202,7 +205,7 @@ class sentence_generation(object):
     
     def show(self, triplet_freqs):
         """
-        3つ組毎の出現回数を出力する
+        3つ組毎の出現回数を出力する。
         """
         for triplet in triplet_freqs:
             print "|".join(triplet), "\t", triplet_freqs[triplet]
@@ -210,7 +213,7 @@ class sentence_generation(object):
     
     def generate(self):
         """
-        文章を生成し、その文章を返す
+        文章を生成し、その文章を返す。
         """
 
         # 最終的にできる文章
@@ -220,16 +223,16 @@ class sentence_generation(object):
 
         # 指定の数だけ作成する
         for _ in xrange(self.sentence_num):
-            if(len(generated_text) >= 100):
-                break
             text = self.generate_sentence(triplet_freqs)
-            generated_text += text
+            # 文字数上限を超えないなら追加
+            if(len(generated_text) + len(text) <= self.stop_length):
+                generated_text += text
 
         return generated_text
 
     def generate_sentence(self, triplet_freqs):
         """
-        ランダムに一文を生成し、その文章を返す
+        ランダムに一文を生成し、その文章を返す。
         """
         # 生成文章のリスト
         morphemes = []
@@ -253,8 +256,8 @@ class sentence_generation(object):
 
     def get_chain(self, triplet_freqs, prefixes):
         """
-        チェーンの情報をtriplet_freqsから取得する
-        チェーンの情報の配列を返す
+        チェーンの情報をtriplet_freqsから取得する。
+        チェーンの情報の配列を返す。
         """
 
         # 結果
@@ -272,8 +275,8 @@ class sentence_generation(object):
 
     def get_first_triplet(self, triplet_freqs):
         """
-        文章のはじまりの3つ組をランダムに取得する
-        文章のはじまりの3つ組のタプルを返す
+        文章のはじまりの3つ組をランダムに取得する。
+        文章のはじまりの3つ組のタプルを返す。
         """
         # BEGINをprefix1としてチェーンを取得
         prefixes = (sentence_generation.BEGIN,)
@@ -281,15 +284,15 @@ class sentence_generation(object):
         # チェーン情報を取得
         chains = self.get_chain(triplet_freqs, prefixes)
 
-        # 取得したチェーンから、確率的に1つ選ぶ
+        # 取得したチェーンから、確率で1つ選ぶ
         triplet = self.get_probable_triplet(chains)
 
         return (triplet["prefix1"], triplet["prefix2"], triplet["suffix"])
 
     def get_triplet(self, triplet_freqs, prefix1, prefix2):
         """
-        prefix1とprefix2からsuffixをランダムに取得する
-        3つ組のタプルを返す
+        prefix1とprefix2からsuffixをランダムに取得する。
+        3つ組のタプルを返す。
         """
         # BEGINをprefix1としてチェーンを取得
         prefixes = (prefix1, prefix2)
@@ -297,15 +300,15 @@ class sentence_generation(object):
         # チェーン情報を取得
         chains = self.get_chain(triplet_freqs, prefixes)
 
-        # 取得したチェーンから、確率的に1つ選ぶ
+        # 取得したチェーンから、確率で1つ選ぶ
         triplet = self.get_probable_triplet(chains)
 
         return (triplet["prefix1"], triplet["prefix2"], triplet["suffix"])
 
     def get_probable_triplet(self, chains):
         """
-        チェーンの配列の中から確率的に1つを返す
-        確率的に選んだ3つ組を返す
+        チェーンの配列の中から確率で1つ選ぶ。
+        確率で選んだ3つ組を返す。
         """
         # 確率配列
         probability = []
@@ -322,6 +325,10 @@ class sentence_generation(object):
 
 
     def generate_text(self):
+        """
+        文章を生成する。
+        生成した文章を返す。
+        """
         # triplet_freqs = self.make_triplet_freqs()
         # self.show(triplet_freqs)
 
@@ -334,12 +341,14 @@ class sentence_generation(object):
     
 
 def get_tweet(auth):
+    """user_timelineのツイートを取得する"""
+
     if(auth != False):
         # tweepy で Twitter API にアクセス
         api = tweepy.API(auth)
 
         # user の timeline 内のツイートのリストをcount分取得
-        timeline = api.user_timeline(count=100)
+        timeline = api.user_timeline(count=295)
 
         texts = ""
         for tweet in timeline:
