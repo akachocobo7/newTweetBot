@@ -146,10 +146,10 @@ class sentence_generation(object):
         一文ずつの配列を返す。
         """
         # 改行文字以外の分割文字（正規表現表記）
-        delimiter = u"。|．|\\."
+        delimiter = re.compile(u"。|．|\\.")
 
         # 全ての分割文字を改行文字に置換（splitしたときに「。」などの情報を無くさないため）
-        text = re.sub(ur"({0})".format(delimiter), r"\1\n", text)
+        text = delimiter.sub(u"\1\n", text)
 
         # 改行文字で分割
         sentences = text.splitlines()
