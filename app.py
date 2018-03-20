@@ -203,12 +203,14 @@ class sentence_generation(object):
 
         return triplet_freqs
     
+    """
     def show(self, triplet_freqs):
-        """
+        '''
         3つ組毎の出現回数を出力する。
-        """
+        '''
         for triplet in triplet_freqs:
             print "|".join(triplet), "\t", triplet_freqs[triplet]
+    """
 
     
     def generate(self):
