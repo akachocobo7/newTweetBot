@@ -1,98 +1,51 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
-過去のツイートから文章を生成するWEBアプリ
-"""
-
-import os
-import logging
-import tweepy
 from janome.tokenizer import Tokenizer
+import json, config
+from requests_oauthlib import OAuth1Session
+import unicodedata
+import string
 import re
 import random
 from collections import defaultdict
-from flask import Flask, session, redirect, render_template, request
 
-# Consumer Key
-CONSUMER_KEY = os.environ['CONSUMER_KEY']
-# Consumer Secret
-CONSUMER_SECRET = os.environ['CONSUMER_SECRET']
-# Callback URL (認証後リダイレクトされるURL)
-CALLBACK_URL = 'https://newtweetbot.herokuapp.com/'  # Heroku上
-# CALLBACK_URL = 'http://localhost:5000/' # ローカル環境
+def tweet_practice():
+    CK = config.CONSUMER_KEY
+    CS = config.CONSUMER_SECRET
+    AT = config.ACCESS_TOKEN
+    ATS = config.ACCESS_TOKEN_SECRET
+    twitter = OAuth1Session(CK, CS, AT, ATS)
 
-logging.warn('app start!')
+    url = "https://api.twitter.com/1.1/statuses/user_timeline.json"
 
-# Flask の起動
-app = Flask(__name__)
-# flask の session を使うにはkeyを設定する必要がある
-app.secret_key = os.environ['SECRET_KEY']
+    params = {'count' : 300}
+    req = twitter.get(url, params = params)
 
-@app.route('/')
-def index():
-    """ root ページの表示 """
+    count = 0
+    texts = ""
+    if req.status_code == 200:
+        timeline = json.loads(req.text)
+        for tweet in timeline:
+            tweet = tweet['text']
 
-    # 認証できているなら auth 、できていないなら False
-    auth = authentication()
-
-    # 認証できているなら文章を生成する
-    if(auth != False):
-        # ツイートを取得
-        tweet = get_tweet(auth)
-        # 文章を生成
-        generate = sentence_generation(tweet)
-        text = generate.generate_text()
+            tweet = re.sub('#.*', "", tweet)    # ハッシュタグは削除
+            tweet = re.sub('http.*', "", tweet) # urlは削除
+            tweet = re.sub('@.*\\s', "", tweet)  # @hoge は削除
+            if "RT" in tweet:   #RTは無視
+                pass
+            else:
+                count += 1
+                # print(tweet)
+                if(unicode(tweet[-1:]) != u'。'):
+                    tweet += u'。'
+                # print(tweet)
+                texts += tweet
     else:
-        text = ""
-    text = text.encode('utf-8')
+        print(("ERROR: %d" % req.status_code))
 
-    # ツイートボタンのHTML
-    tweet_html = '<a href="https://twitter.com/share" class="twitter-share-button" data-size="large" data-url=' + CALLBACK_URL + ' data-text=' + text + ' data-hashtags="Iam_BOT" data-lang="ja" data-show-count="false">Tweet</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>'
-
-    # templates/index.html を使ってレンダリング．
-    return render_template('index.html', auth=auth, tweet_html=tweet_html, text=text)
-
-
-@app.route('/twitter_auth', methods=['GET'])
-def twitter_auth():
-    """ 連携アプリ認証用URLにリダイレクト """
-
-    # tweepy でアプリのOAuth認証を行う
-    auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET, CALLBACK_URL)
-
-    try:
-        # 連携アプリ認証用の URL を取得
-        redirect_url = auth.get_authorization_url()
-        # 認証後に必要な request_token を session に保存
-        session['request_token'] = auth.request_token
-    except tweepy.TweepError as e:
-        logging.error(str(e))
-
-    # リダイレクト
-    return redirect(redirect_url)
-
-# 認証できているなら auth を返し、できていないなら False を返す
-def authentication():
-    # request_token と oauth_verifier のチェック
-    token = session.pop('request_token', None)
-    verifier = request.args.get('oauth_verifier')
-    if token is None or verifier is None:
-        return False  # 未認証ならFalseを返す
-
-    # tweepy でアプリのOAuth認証を行う
-    auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET, CALLBACK_URL)
-
-    # Access token, Access token secret を取得．
-    auth.request_token = token
-    try:
-        auth.get_access_token(verifier)
-    except tweepy.TweepError as e:
-        logging.error(str(e))
-        return {}
-    
-    return auth
-
+    print((str(count) + "tweets"))
+    return texts
 
 class sentence_generation(object):
     """文章を生成する"""
@@ -335,34 +288,20 @@ class sentence_generation(object):
 
         if(self.text != ""):
             text = self.generate()
-            # print (text.encode('utf_8'))
+            print (text.encode('utf_8'))
             return text
         else:
             return {}
     
 
-def get_tweet(auth):
-    """user_timelineのツイートを取得する"""
-
-    if(auth != False):
-        # tweepy で Twitter API にアクセス
-        api = tweepy.API(auth)
-
-        # user の timeline 内のツイートのリストをcount分取得
-        timeline = api.user_timeline(count=295)
-
-        texts = ""
-        for tweet in timeline:
-            text = tweet.text
-
-            text = re.sub('#.*', "", text)    # ハッシュタグは削除
-            text = re.sub('http.*', "", text) # urlは削除
-            text = re.sub('@.*\\s', "", text)  # @hoge は削除
-            if "RT" in text:   #RTは無視
-                pass
-            else:
-                texts += text
-        
-        return texts
-    else:
-        return {}
+if __name__ == '__main__':
+    text = tweet_practice()
+    '''
+    f = open('test.txt')
+    text = f.read()
+    f.close()
+    '''
+    a = re.compile("[!-/:-@[-`{-~]")
+    text = re.sub(a, "", text)
+    generate = sentence_generation(text)
+    generate.generate_text()

@@ -1,4 +1,4 @@
 Flask==0.12.2
 gunicorn==19.7.1
 tweepy==3.4.0
-natto-py==0.8.0
+janome==0.3.6
