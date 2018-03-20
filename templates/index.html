@@ -4,15 +4,15 @@
     <meta charset="utf-8"/>
     <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css" integrity="sha384-nn4HPE8lTHyVtfCBi5yW9d20FjT8BJwUXyWZT9InLYax14RDjBj46LmSztkmNP9w" crossorigin="anonymous">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Flask + Tweepy Sample Application</title>
+    <title>newTweet</title>
   </head>
   <body>
-    <h1>Flask + Tweepy Sample Application</h1>
+    <h1>newTweet from pastTweet</h1>
     {% if auth == False %}
       <p> <a class="pure-button pure-button-primary" href="{{ url_for('twitter_auth') }}">ツイートを生成する</a> </p>
     {% else %}
       <!-- ツイートボタン -->
-      {{ tweet_html.decode('utf-8') | safe }}
+      {{ tweet_html | safe }}
 
       <p>{{ text.decode('utf-8') }}</p>
     {% endif %}
