@@ -7,7 +7,9 @@
     <title>newTweet</title>
   </head>
   <body>
-    <h1>newTweet from pastTweet</h1>
+    <h1>NewTweetBot</h1>
+    <h3>概要 : 過去のツイートを学習し、新しいツイートを生み出します！</h3>
+    <hr>
     {% if auth == False %}
       <p> <a class="pure-button pure-button-primary" href="{{ url_for('twitter_auth') }}">ツイートを生成する</a> </p>
     {% else %}

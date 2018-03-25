@@ -349,7 +349,7 @@ def get_tweet(auth):
         api = tweepy.API(auth)
 
         # user の timeline 内のツイートのリストをcount分取得
-        timeline = api.user_timeline(count=295)
+        timeline = api.user_timeline(count=300)    # 最大200件までしか叩けない？要検証
 
         texts = ""
         for tweet in timeline:
