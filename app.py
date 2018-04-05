@@ -19,8 +19,8 @@ CONSUMER_KEY = os.environ['CONSUMER_KEY']
 # Consumer Secret
 CONSUMER_SECRET = os.environ['CONSUMER_SECRET']
 # Callback URL (認証後リダイレクトされるURL)
-CALLBACK_URL = 'https://newtweetbot.azurewebsites.net'  # azure上
-# CALLBACK_URL = 'http://localhost:5000/' # ローカル環境
+# CALLBACK_URL = 'https://newtweetbot.azurewebsites.net'  # azure上
+CALLBACK_URL = 'http://localhost:5000/' # ローカル環境
 
 logging.warn('app start!')
 
@@ -40,9 +40,13 @@ def index():
     if(auth != False):
         # ツイートを取得
         tweet = get_tweet(auth)
-        # 文章を生成
-        generate = sentence_generation(tweet)
-        text = generate.generate_text()
+
+        if(tweet != ""): # 1件以上ツイートされているときだけ生成
+            # 文章を生成
+            generate = sentence_generation(tweet)
+            text = generate.generate_text()
+        else:
+            text = ""
     else:
         text = ""
     text = text.encode('utf-8')
