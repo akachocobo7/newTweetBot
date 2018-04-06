@@ -49,7 +49,7 @@
         fputs($fp, $count);
         flock($fp, LOCK_UN);
         fclose($fp);
-        echo "あなたは <em> $counter </em> 人目の訪問者です。";
+        echo 'あなたは <em> ', $count, '</em> 人目の訪問者です。' ;
       ?>
     
       <br>
