@@ -32,10 +32,25 @@
       <hr>
       {% if auth != False %}
         <!-- shinobi ct2 -->
+        <!--
         <script type="text/javascript" src="//ct2.shinobi.jp/sc/1739099"></script>
         <noscript><a href="//ct2.shinobi.jp/gg/1739099"><img src="//ct2.shinobi.jp/ll/1739099" border="0" alt="カウンター" /></a></noscript>
+        -->
         <!-- /shinobi ct2 -->
       {% endif %}
+
+      <?php
+        $filename = 'count.txt';
+ 
+        $fp = fopen($filename, "r+");
+        $count = fgets($fp,32);
+        $count++;
+        fseek($fp, 0);
+        fputs($fp, $count);
+        flock($fp, LOCK_UN);
+        fclose($fp);
+        echo "あなたは <em> $counter </em> 人目の訪問者です。";
+      ?>
     
       <br>
       <p> This application was made by <a href="https://twitter.com/oit_chocobo">chocobo</a> </p>
