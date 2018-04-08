@@ -1,3 +1,3 @@
-# newTweet_from_pastTweet
+# newTweetBot
 
 過去のツイートから文章を生成するWEBアプリです。
